@@ -32,6 +32,7 @@ fecheck.log
 README-NEW.md
 publish.js
 ensure-repo.js
+check-push.js
 .tools/
 
 # editor / os
