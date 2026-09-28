@@ -1,7 +1,8 @@
 # চুক্তি (Chukti) — System Architecture & File Guide
 
-> README choto rakha hoyeche; ei file e full architecture, protita file er kaj,
-> data model, API table, testing o deploy guide ache.
+> Setup, API summary o deploy steps `README.md` e ache; ei file e full architecture,
+> protita file er kaj, data model, API table, testing o hosting guide ache.
+> **Live preview:** https://twins-receptor-heaven-pride.trycloudflare.com
 
 ## 1. Architecture (request flow)
 
@@ -47,11 +48,43 @@ Upcoming → Approval (Order to Purchase) → Ongoing (Purchased: submission dat
 deposited; bid optional) → Won / Lost (Lost needs reason + **Our Quoted Price**;
 Lost card sums quotes) → Reopen possible.
 
+## 3. File-by-file (kon file er ki kaj)
+
+### Root
+
+| File | Kaj |
+| --- | --- |
+| `server.js` | Express boot: DB init + admin seed, JSON/cookie middleware, `/api/*` routers, static `public/`, SPA fallback, error handler, listen. |
+| `package.json` | 4 deps (express, bcryptjs, jsonwebtoken, cookie-parser) + scripts `start/dev/test/check:ui`. |
+| `package-lock.json` | Reproducible `npm ci` build (deploy e use hoy). |
+| `render.yaml` | Render Blueprint: Node 24, `npm ci`, `/api/health` check, persistent disk, `JWT_SECRET` generate. |
+| `Dockerfile` / `.dockerignore` | Container deploy (Node 24-slim, non-root, healthcheck). |
+| `.gitignore` | DB, logs, `.env`, local helpers ignore. |
+| `LICENSE` | MIT. |
+| `database.db` | Git-ignored; first run e auto-create (WAL). Kokhono commit na. |
+
+### middleware/
+
+`middleware/auth.js` — `readToken` (cookie→Bearer), `signToken`, `setAuthCookie`/
+`clearAuthCookie`, `requireAuth` (JWT verify + active check), `requireRole()`,
+`findUserByEmail`, `loadUserById`.
+
+### routes/ (sob `requireAuth` diye suru)
+
+| File | Kaj |
+| --- | --- |
+| `routes/auth.js` | `POST login/logout`, `GET me`. bcrypt verify, last_login, JWT cookie, activity. |
+| `routes/users.js` | Admin user CRUD + reset-password + delete (last-admin protection, FK detach). |
+| `routes/tenders.js` | `GET /tenders` (+stats, `:id`), `POST/PUT/DELETE`, `approve/unapprove/purchase/mark-won/mark-lost/reopen`. Rep visibility filter, search/category/approval/sort, `buildStats()` (Lost = sum quoted), purchase e bid optional, lost e quoted price required, sob transition audit. |
+| `routes/activity.js` | `GET /api/activity`, `/recent` — audit trail (rep শুধু approved tender er), `tender_id/user_id/action/from/to` filter. |
+
+---
+
 ### utils/
 
 | File | Kaj |
 | --- | --- |
-| `utils/config.js` | PORT, JWT_SECRET (prod e required), cookie, bcrypt rounds, default admin. |
+| `utils/config.js` | PORT, JWT_SECRET (prod e required), cookie, bcrypt rounds, default admin, DB_PATH. |
 | `utils/constants.js` | Roles, stages, categories, BG types, 10 lost reasons, action labels. |
 | `utils/db.js` | SQLite: schema (Users/Tenders/ActivityLog+indexes), WAL/FK pragmas, column migration, lost-price backfill, default admin seed. |
 | `utils/audit.js` | `logActivity()` + `recentActivity()`. |
@@ -68,7 +101,7 @@ Lost card sums quotes) → Reopen possible.
 | File | Kaj |
 | --- | --- |
 | `index.html` | App shell: header, nav, page containers, modal/toast roots. |
-| `login.html` | Sign-in (logo.png → logo.svg fallback). |
+| `login.html` | Sign-in (logo.png → logo.svg fallback). Default-credential hint শুধু localhost e দেখায়। |
 | `app.js` | ~1700-line SPA: state/api/router/statCards/panels/tabs/search/CSV/cards/modals (purchase: no bid; lost: Our Quoted Price)/detail/users/activity/toasts. |
 | `icons.js` | SVG icons + shared constants. |
 | `styles.css` | Brand theme `#0F4C3A`/`#D4AF37`/`#FDFBF7`, Inter + Hind Siliguri. |
@@ -91,67 +124,64 @@ Lost card sums quotes) → Reopen possible.
 | PUT | `/api/users/:id` | admin |
 | POST | `/api/users/:id/reset-password` | admin |
 | DELETE | `/api/users/:id` | admin |
-| GET | `/api/tenders` | role filtered |
+| GET | `/api/tenders` | role filtered (`stage`, `search`, `category`, `approval`, `sort`, `order`) |
 | GET | `/api/tenders/stats` | role filtered |
-| GET | `/api/tenders/:id` | role filtered |
+| GET | `/api/tenders/:id` | role filtered (id ba tender code) |
 | POST | `/api/tenders` | admin, manager |
 | PUT | `/api/tenders/:id` | admin(any), manager(own) |
 | DELETE | `/api/tenders/:id` | admin |
 | POST | `/api/tenders/:id/approve` | admin, manager |
 | POST | `/api/tenders/:id/unapprove` | admin, manager |
-| POST | `/api/tenders/:id/purchase` | any user |
+| POST | `/api/tenders/:id/purchase` | any user (bid optional) |
 | POST | `/api/tenders/:id/mark-won` | any user |
-| POST | `/api/tenders/:id/mark-lost` | any user |
+| POST | `/api/tenders/:id/mark-lost` | any user (quoted price required) |
 | POST | `/api/tenders/:id/reopen` | admin, manager |
 | GET | `/api/activity`, `/api/activity/recent` | role filtered |
 | GET | `/api/health` | public |
 
+---
+
 ## 6. Testing
 
 ```bash
-npm test          # 58 API checks
-npm run check:ui  # 40 UI checks
+npm test          # 58 API check (server cholte thakbe; self cleanup)
+npm run check:ui  # 40 UI check
 ```
 
-## 7. Deploy — host kore public link pawa (free)
+Dono suite isolated test data create kore, sheshe delete kore dey. Result: **58/58 + 40/40 pass**.
 
-`render.yaml` + `Dockerfile` repo te ache. SQLite **persistent disk** e thake.
+## 7. Deploy — public link
 
-**Render (recommended):** dashboard.render.com → New → Blueprint → repo select →
-`JWT_SECRET` Generate → Deploy → `https://chukti.onrender.com` → login
-`admin@chukti.com`/`admin123` → password bodlan.
+`render.yaml` + `Dockerfile` repo te ache, tai hosting ~5 minute. SQLite **persistent
+disk/volume** e thake, obossoi mount korte hobe (nahole restart e data chole jabe).
 
-**Docker host (Sevalla/Railway/Fly.io):**
-`docker build -t chukti .` →
-`docker run -p 3000:3000 -e JWT_SECRET=... -v chukti-data:/app/data chukti`
+### Render (recommended, free)
 
-Note: free tier 15 min idle e sleep → first request ~30s. Custom domain + free SSL
-Render Settings e.
+dashboard.render.com → **New +** → **Blueprint** → repo
+`KRCS2026/CHUKTI-TENDER-Management-System` select → `JWT_SECRET` **Generate** →
+**Deploy** → link ready: `https://chukti.onrender.com` → login `admin@chukti.com`/
+`admin123` → **password bodlan**. Free tier 15 min idle e sleep → first request ~30s;
+custom domain + free SSL Render Settings e.
+
+### Docker host (Sevalla / Railway / Fly.io / VPS)
+
+```bash
+docker build -t chukti .
+docker run -p 3000:3000 -e JWT_SECRET=... -v chukti-data:/app/data chukti
+```
+
+### Temporary link — Cloudflare quick tunnel (kono account lage na)
+
+```bash
+node tunnel.js     # localhost:3000 → https://<random>.trycloudflare.com
+```
+
+- Ei machine + server chalu thakle kaj korbe, **URL prottek restart e bodlabe**
+- Ekhonkar preview: **https://twins-receptor-heaven-pride.trycloudflare.com**
+- Bondho: `Get-Process cloudflared | Stop-Process -Force`
+
+⚠️ Public tunnel app **o `database.db` er data** ke jekono link-holder er kache khola
+rakhe — shudhu demo/quick review er jonno use korun, ar agei admin password bodlan
+(default-credentials hint localhost chara auto hide hoy).
 
 
-## 3. File-by-file (kon file er ki kaj)
-
-### Root
-
-| File | Kaj |
-| --- | --- |
-| `server.js` | Express boot: DB init + admin seed, JSON/cookie middleware, `/api/*` routers, static `public/`, SPA fallback, error handler, listen. |
-| `package.json` | 4 deps (express, bcryptjs, jsonwebtoken, cookie-parser) + scripts `start/dev/test/check:ui`. |
-| `render.yaml` | Render Blueprint: Node 24, `npm ci`, persistent disk, `JWT_SECRET` generate. |
-| `Dockerfile` / `.dockerignore` | Container deploy (Node 24-slim, non-root, healthcheck). |
-| `.gitignore` | DB, logs, `.env`, local helpers ignore. |
-| `LICENSE` | MIT. |
-| `database.db` | Git-ignored; first run e auto-create. Kokhono commit na. |
-
-### middleware/
-
-`middleware/auth.js` — `readToken` (cookie→Bearer), `signToken`, `setAuthCookie`/
-`clearAuthCookie`, `requireAuth` (JWT verify + active check), `requireRole()`,
-`findUserByEmail`, `loadUserById`.
-
-### routes/ (sob `requireAuth` diye suru)
-
-| File | Kaj |
-| --- | --- |
-| `routes/auth.js` | `POST login/logout`, `GET me`. bcrypt verify, last_login, JWT cookie, activity. |
-| `routes/users.js` | Admin user CRUD + reset-password + delete (last-admin protection, FK detach). |

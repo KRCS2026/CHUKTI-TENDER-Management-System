@@ -8,7 +8,14 @@ Complete tender lifecycle management with a role-based approval workflow, built 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-58%20API%20%2B%2040%20UI-success)](#testing)
 
-> **Live demo:** deploy korar por `https://YOUR-APP.onrender.com` — steps: [Deploy](#deploy--public-link-free)
+> ### 🌐 Live demo (running now)
+> **https://twins-receptor-heaven-pride.trycloudflare.com**
+> Sign in with `admin@chukti.com` / `admin123` (change it right away!).
+>
+> Hoisted temporarily through a Cloudflare quick tunnel to the local server
+> (`node tunnel.js`, no account needed). The URL is **ephemeral** — it dies when the
+> tunnel or the machine stops, and a restart creates a new one, so treat it as a
+> preview link. For a permanent URL, follow [Deploy](#10-deploy--public-link-free).
 
 **Contents**
 [Architecture](#1-architecture) ·
@@ -286,6 +293,22 @@ docker run -p 3000:3000 -e JWT_SECRET=... -v chukti-data:/app/data chukti
 ```
 
 Keep the SQLite file on a persistent volume, otherwise the data is lost on restart.
+
+### Option C — temporary public link, no account (what the live demo uses)
+
+```bash
+node tunnel.js     # downloads cloudflared once, prints https://<random>.trycloudflare.com
+```
+
+- Points a Cloudflare quick tunnel at `http://localhost:3000` — works while this machine and
+  the server are running, and **the URL changes every restart**
+- Current preview link: **https://twins-receptor-heaven-pride.trycloudflare.com**
+- Stop it with `Get-Process cloudflared | Stop-Process -Force` (Windows) or Ctrl+C
+
+> ⚠️ A public tunnel exposes the app **and the data in `database.db`** to anyone with the link.
+> Use it only for demos/short reviews, open only the ports you need, and change the default
+> admin password first. The default-credentials hint is hidden automatically outside
+> `localhost` (`public/login.html`).
 
 ### Notes
 
