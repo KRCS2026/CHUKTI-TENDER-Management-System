@@ -6,16 +6,17 @@ services:
     buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/health
-    disk:
-      name: chukti-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: 24.11.0
       - key: NODE_ENV
         value: production
+      # NOTE (Render free tier): persistent disks are NOT supported on the free
+      # plan, so the SQLite file lives in /tmp and is reset on every
+      # redeploy/restart. Fine for a live demo; use a paid plan (disk) or an
+      # external DB (Turso/Neon) for permanent data.
       - key: DB_PATH
-        value: /opt/render/project/src/data/database.db
+        value: /tmp/chukti-data/database.db
       - key: JWT_SECRET
         generateValue: true
+

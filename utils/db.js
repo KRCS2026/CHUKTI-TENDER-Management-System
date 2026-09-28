@@ -6,6 +6,7 @@
  * Every query in this project is parameterised to prevent SQL injection.
  */
 
+const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 const bcrypt = require('bcryptjs');
@@ -15,6 +16,9 @@ const config = require('./config');
 const DB_PATH = process.env.DB_PATH
   ? path.resolve(process.env.DB_PATH)
   : path.join(__dirname, '..', 'database.db');
+
+// Ensure the parent directory exists (e.g. /tmp/chukti-data on Render free tier).
+fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
 const db = new DatabaseSync(DB_PATH);
 
