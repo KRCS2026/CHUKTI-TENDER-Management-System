@@ -57,7 +57,7 @@
       </button>
     </form>
 
-    <div class="login-demo">
+    <div class="login-demo" id="login-demo" hidden>
       <strong>Default credentials</strong>
       <code>admin@chukti.com</code> / <code>admin123</code>
     </div>
@@ -78,6 +78,15 @@
       var submitBtn = document.getElementById('login-submit');
       var toggle = document.getElementById('toggle-password');
       var remember = document.getElementById('remember');
+      var demoHint = document.getElementById('login-demo');
+
+      // The default-credentials hint is only useful (and safe) on the local machine.
+      if (demoHint) {
+        var host = location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '') {
+          demoHint.hidden = false;
+        }
+      }
 
       // Already signed in? go straight to the app.
       fetch('/api/auth/me', { credentials: 'same-origin' })

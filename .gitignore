@@ -33,6 +33,9 @@ README-NEW.md
 publish.js
 ensure-repo.js
 check-push.js
+set-repo-meta.js
+tunnel.js
+tunnel-url.txt
 .tools/
 
 # editor / os
