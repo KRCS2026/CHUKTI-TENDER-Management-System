@@ -1,0 +1,28 @@
+{
+  "name": "chukti-tender-management",
+  "version": "1.1.0",
+  "private": true,
+  "description": "চুক্তি (Chukti) — Tender Management System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --watch --disable-warning=ExperimentalWarning server.js",
+    "test": "node scripts/smoke-test.js",
+    "check:ui": "node scripts/frontend-check.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "keywords": [
+    "tender",
+    "chukti",
+    "management"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

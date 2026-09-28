@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in · চুক্তি</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="login-brand">
+      <img class="brand-logo lg" src="logo.png" alt="চুক্তি logo"
+           onerror="this.onerror=null;this.src='logo.svg';" />
+      <div>
+        <div class="login-hindi">চুক্তি</div>
+        <div class="login-sub">Tender Management System</div>
+      </div>
+    </div>
+
+    <form class="login-form" id="login-form" autocomplete="on" novalidate>
+      <div class="login-error" id="login-error" hidden>
+        <span>⚠️</span><span id="login-error-text">Invalid email or password.</span>
+      </div>
+
+      <div class="field">
+        <label for="email">✉️&nbsp; Email</label>
+        <input type="email" id="email" name="email" placeholder="admin@chukti.com"
+               autocomplete="username" required />
+      </div>
+
+      <div class="field">
+        <label for="password">🔒&nbsp; Password</label>
+        <div class="input-wrap">
+          <input type="password" id="password" name="password" placeholder="••••••••"
+                 autocomplete="current-password" required style="padding-right:44px" />
+          <button class="peek" type="button" id="toggle-password" title="Show password" aria-label="Show password">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <label class="check" style="margin-bottom:18px">
+        <input type="checkbox" id="remember" />
+        <span>Remember me on this device</span>
+      </label>
+
+      <button class="btn btn-primary btn-lg btn-block" type="submit" id="login-submit">
+        Sign in
+      </button>
+    </form>
+
+    <div class="login-demo">
+      <strong>Default credentials</strong>
+      <code>admin@chukti.com</code> / <code>admin123</code>
+    </div>
+
+    <p class="login-foot">চুক্তি — Tender Management System · change the admin password after setup</p>
+  </main>
+
+  <script src="icons.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var form = document.getElementById('login-form');
+      var emailInput = document.getElementById('email');
+      var passwordInput = document.getElementById('password');
+      var errorBox = document.getElementById('login-error');
+      var errorText = document.getElementById('login-error-text');
+      var submitBtn = document.getElementById('login-submit');
+      var toggle = document.getElementById('toggle-password');
+      var remember = document.getElementById('remember');
+
+      // Already signed in? go straight to the app.
+      fetch('/api/auth/me', { credentials: 'same-origin' })
+        .then(function (res) { if (res.ok) window.location.replace('/'); })
+        .catch(function () { /* offline: stay on the form */ });
+
+      toggle.addEventListener('click', function () {
+        var showing = passwordInput.type === 'text';
+        passwordInput.type = showing ? 'password' : 'text';
+        toggle.title = showing ? 'Show password' : 'Hide password';
+      });
+
+      function showError(message) {
+        errorText.textContent = message;
+        errorBox.hidden = false;
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        errorBox.hidden = true;
+
+        var email = emailInput.value.trim();
+        var password = passwordInput.value;
+
+        if (!email || !password) {
+          showError('Please enter both your email and password.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Signing in…';
+
+        fetch('/api/auth/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password, remember: remember.checked })
+        })
+          .then(function (res) {
+            return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+          })
+          .then(function (result) {
+            if (!result.ok) {
+              showError((result.data && result.data.error) || 'Sign in failed. Please try again.');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Sign in';
+              return;
+            }
+            window.location.replace('/');
+          })
+          .catch(function () {
+            showError('Cannot reach the server. Is it running?');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign in';
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+
+# database (created automatically on first run)
+database.db
+database.db-shm
+database.db-wal
+*.db
+*.db-shm
+*.db-wal
+
+# logs
+*.log
+
+# environment
+.env
+.env.local
+
+# local helpers (not part of the app)
+server.pid
+server-run.log
+server-err.log
+start-server.js
+findgit.bat
+findgit2.js
+installgit.js
+cleanup.js
+push-choice.json
+gitsearch.log
+gitinstall.log
+fecheck.log
+README-NEW.md
+publish.js
+ensure-repo.js
+.tools/
+
+# editor / os
+.vscode/*
+!.vscode/extensions.json
+.idea/
+Thumbs.db
+desktop.ini

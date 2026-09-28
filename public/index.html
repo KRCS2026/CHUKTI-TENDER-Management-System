@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>চুক্তি · Tender Management System</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- boot / auth check -->
+  <div class="center-screen" id="boot-screen">
+    <div class="flex items-center gap-8">
+      <span class="spinner dark"></span>
+      <span class="muted">Loading চুক্তি…</span>
+    </div>
+  </div>
+
+  <div class="app" id="app" hidden>
+    <header class="header">
+      <div class="container header-inner">
+        <div class="brand">
+          <img class="brand-logo" id="header-logo" src="logo.png" alt="চুক্তি"
+               onerror="this.onerror=null;this.src='logo.svg';" />
+          <div>
+            <div class="brand-name">চুক্তি</div>
+            <div class="brand-sub">Tender Management System</div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="icon-btn" id="bell-btn" data-action="goto-pending" title="Pending approvals" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6" />
+              <path d="M13.7 20a2 2 0 0 1-3.4 0" />
+            </svg>
+            <span class="icon-badge" id="bell-count" hidden>0</span>
+          </button>
+
+          <div class="dropdown" id="user-dropdown">
+            <button class="user-chip" data-action="toggle-user-menu" aria-haspopup="true">
+              <span class="avatar" id="user-avatar">A</span>
+              <span class="user-meta">
+                <span class="user-name" id="user-name">—</span>
+                <span class="user-role" id="user-role">—</span>
+              </span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            <div class="dropdown-menu">
+              <div class="who">
+                <strong id="who-name">—</strong>
+                <span id="who-email">—</span>
+              </div>
+              <button class="dropdown-item" data-action="goto-activity"><span>📜</span> Activity log</button>
+              <button class="dropdown-item" data-action="refresh"><span>↻</span> Refresh data</button>
+              <button class="dropdown-item danger" data-action="logout"><span>🔒</span> Sign out</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="nav">
+      <div class="container nav-inner" id="nav-tabs"></div>
+    </nav>
+
+    <main class="container page">
+      <section id="page-dashboard" class="page-body" hidden></section>
+      <section id="page-tenders" class="page-body" hidden></section>
+      <section id="page-users" class="page-body" hidden></section>
+      <section id="page-activity" class="page-body" hidden></section>
+    </main>
+  </div>
+
+  <div id="modal-root"></div>
+  <div class="toasts" id="toasts"></div>
+
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
