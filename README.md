@@ -10,7 +10,7 @@ Complete tender lifecycle management with a role-based approval workflow, built 
 
 > ### 🌐 Live demo (running now)
 > **https://twins-receptor-heaven-pride.trycloudflare.com**
-> Sign in with `admin@chukti.com` / `admin123` (change it right away!).
+> 
 >
 > Hoisted temporarily through a Cloudflare quick tunnel to the local server
 > (`node tunnel.js`, no account needed). The URL is **ephemeral** — it dies when the
